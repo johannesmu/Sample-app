@@ -19,7 +19,7 @@ web-build/
 expo-env.d.ts
 # @end expo-cli
 
-config/
+config/Config.ts
 # firebase config
 
 #changes
