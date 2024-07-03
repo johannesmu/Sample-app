@@ -5,17 +5,15 @@ import { signOut } from '@firebase/auth'
 import { useRouter } from 'expo-router'
 import { DbContext } from '@/contexts/DbContext'
 import { collection, addDoc } from "firebase/firestore"
+import { useNavigation } from 'expo-router'
 
 export default function Home( props:any ) {
     const auth = useContext( AuthContext )
     const db = useContext( DbContext )
     const router = useRouter()
-
-    // useEffect( () => {
-    //     if( auth ) {
-    //         console.log( auth.currentUser )
-    //     }
-    // })
+    const navigation = useNavigation()
+    // showing the header via setOptions()
+    navigation.setOptions({ headerShown: true })
 
     const SignOutUser = () => {
         signOut( auth )
