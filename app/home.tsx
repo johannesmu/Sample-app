@@ -3,16 +3,19 @@ import { AuthContext } from '@/contexts/AuthContext'
 import { useContext, useEffect } from 'react'
 import { signOut } from '@firebase/auth'
 import { useRouter } from 'expo-router'
+import { DbContext } from '@/contexts/DbContext'
+import { collection, addDoc } from "firebase/firestore"
 
 export default function Home( props:any ) {
     const auth = useContext( AuthContext )
+    const db = useContext( DbContext )
     const router = useRouter()
 
-    useEffect( () => {
-        if( auth ) {
-            console.log( auth.currentUser )
-        }
-    })
+    // useEffect( () => {
+    //     if( auth ) {
+    //         console.log( auth.currentUser )
+    //     }
+    // })
 
     const SignOutUser = () => {
         signOut( auth )
@@ -24,12 +27,39 @@ export default function Home( props:any ) {
         } )
     }
 
+    const addData = async () => {
+        const data = {
+            time: new Date().getTime(),
+            number: Math.floor(Math.random() * 100)
+        }
+        const path = `users/${ auth.currentUser.uid }/items`
+        const docRef = await addDoc( collection( db, path), data )
+        console.log( docRef.id )
+    }
+
     return(
         <View>
             <Text>Home</Text>
             <Pressable onPress={ () => SignOutUser() }>
                 <Text>Sign Out</Text>
             </Pressable>
+            <Pressable style={ styles.addButton } onPress={ () => addData() } >
+                <Text style={ styles.addButtonText }>Add data</Text>
+            </Pressable>
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    addButton: {
+        backgroundColor: "#333333",
+        padding: 8,
+        alignSelf: "center",
+        width: 200,
+        borderRadius: 5,
+    },
+    addButtonText: {
+        color: "#eeeeee",
+        textAlign: "center",
+    }
+})
