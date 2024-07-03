@@ -3,8 +3,12 @@
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
+1. Clone this repository
+   ```bash
+   git clone https://github.com/johannesmu/Sample-app .
+   ```
 
-1. Install dependencies
+2. Install dependencies
 
    ```bash
    npm install
