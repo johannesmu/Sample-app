@@ -2,22 +2,23 @@ import { View, Text, StyleSheet, StatusBar, TextInput } from 'react-native'
 import { Link } from 'expo-router'
 import { AuthForm } from '@/components/AuthForm'
 import { AuthContext } from '@/contexts/AuthContext'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { createUserWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth'
 import { useRouter } from 'expo-router'
+import { ErrorMessage } from '@/components/ErrorMessage'
 
 export default function Signup( props : any ) {
     const auth = useContext( AuthContext )
     const router = useRouter()
+    const [ error, setError ] = useState('')
 
     const createAccount = ( email:string, password:string ) => {
         createUserWithEmailAndPassword( auth, email, password )
         .then( (userCredential) => {
-            console.log( userCredential.user )
             router.replace('/home')
         })
         .catch( (error) => {
-            console.log( error.code, error.message )
+           setError( error.code )
         })
     }
 
@@ -41,6 +42,7 @@ export default function Signup( props : any ) {
                     <Text style={ styles.link } >Go to Sign in</Text>
                 </Link>
             </View>
+            <ErrorMessage error={error} />
         </View>
     )
 }
@@ -53,6 +55,6 @@ const styles = StyleSheet.create({
     },
     link: {
         color: "#b8111e",
-        
+        marginLeft: 5,
     }
 })
