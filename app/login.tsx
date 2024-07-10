@@ -15,7 +15,7 @@ export default function Login(props: any) {
     const SignIn = ( email:string, password:string ) => {
         signInWithEmailAndPassword( auth, email, password )
         .then((userCredential) => {
-            router.replace('/home')
+            router.replace('/(tabs)/')
         })
         .catch(( error) => {
             setError( error.code )
