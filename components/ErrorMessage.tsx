@@ -1,38 +1,41 @@
 import { View, Text, StyleSheet } from 'react-native'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-export function ErrorMessage(props: any) {
-    const [error, setError] = useState(null)
-    const [message, setMessage] = useState(null)
+export function ErrorMessage( props:any ) {
+    const[ message, setMessage ] = useState('')
 
-    useEffect(() => {
-        if (props.error) {
-            setError( props.error )
-            // get the error message
-            const errorMsg = props.error.message
-            // get where the '/' is in the string
-            const errorMsgIndex = errorMsg.indexOf('/')
-            // extract error message text
-            const errorMsgText = errorMsg.slice( errorMsgIndex + 1, errorMsg.length - 2 )
-            setMessage( errorMsgText.replaceAll('-', ' ') )
+    useEffect( () => {
+        if( props.error ) {
+            const msg:string = props.error
+            const slashIndex:number = props.error.indexOf('/')
+            setMessage( msg.slice( slashIndex + 1, msg.length ).replaceAll('-', ' ') )
         }
-    }, [props.error])
+        else {
+            setMessage('')
+        }
+    }, [ props.error ] )
 
-    if (error) {
-        return (
-            <View>
-                <Text style={ styles.text }>{message}</Text>
+    if( message ) {
+        return(
+            <View style={ styles.alert }>
+                <Text style={ styles.text } >{ message }</Text>
             </View>
         )
     }
     else {
         return null
     }
-
 }
 
 const styles = StyleSheet.create({
     text: {
-        textAlign: 'center',
+        textAlign: 'center'
+    },
+    alert: {
+        padding: 5,
+        backgroundColor: '#ffc9c9',
+        width: 250,
+        alignSelf: 'center',
+        borderRadius: 10,
     }
 })

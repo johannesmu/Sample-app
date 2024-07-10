@@ -10,17 +10,16 @@ import { ErrorMessage } from '@/components/ErrorMessage'
 export default function Signup(props: any) {
     const auth = useContext(AuthContext)
     const router = useRouter()
-    const [authError, setAuthError] = useState(null)
+    const [ error, setError ] = useState('')
 
-    const createAccount = (email: string, password: string) => {
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // user is authenticated, route to /home
-                router.replace('/home')
-            })
-            .catch((error) => {
-                setAuthError(error)
-            })
+    const createAccount = ( email:string, password:string ) => {
+        createUserWithEmailAndPassword( auth, email, password )
+        .then( (userCredential) => {
+            router.replace('/home')
+        })
+        .catch( (error) => {
+           setError( error.code )
+        })
     }
 
     onAuthStateChanged(auth, (user) => {
@@ -43,7 +42,7 @@ export default function Signup(props: any) {
                     <Text style={styles.link} >Go to Sign in</Text>
                 </Link>
             </View>
-            <ErrorMessage error={authError} />
+            <ErrorMessage error={error} />
         </View>
     )
 }
@@ -56,6 +55,6 @@ const styles = StyleSheet.create({
     },
     link: {
         color: "#b8111e",
-        marginLeft: 10,
+        marginLeft: 5,
     }
 })
