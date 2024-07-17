@@ -1,68 +1,70 @@
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native'
 import { AuthContext } from '@/contexts/AuthContext'
 import { useContext, useEffect, useState } from 'react'
-import { useRouter } from 'expo-router'
+import { useRouter, Link } from 'expo-router'
 import { DbContext } from '@/contexts/DbContext'
 import { collection, addDoc, where, query, onSnapshot } from "firebase/firestore"
 import { useNavigation } from 'expo-router'
 import { SignOutButton } from '@/components/SignOutButton'
 
-export default function Home( props:any ) {
-    const auth = useContext( AuthContext )
-    const db = useContext( DbContext )
+export default function Home(props: any) {
+    const auth = useContext(AuthContext)
+    const db = useContext(DbContext)
     const router = useRouter()
     const navigation = useNavigation()
 
-    const [data, setData ] = useState([])
-    const [loaded,setLoaded] = useState(false)
-
+    const [data, setData] = useState([])
+    const [loaded, setLoaded] = useState(false)
 
     // showing the header via setOptions()
-    useEffect( () => {
-        navigation.setOptions({ 
+    useEffect(() => {
+        navigation.setOptions({
             headerShown: true,
-            headerRight: () => <SignOutButton /> 
+            headerRight: () => <SignOutButton />
         })
     }, [navigation])
 
-    useEffect( () => { 
-       if( loaded == false ) {
+    useEffect(() => {
+        if (loaded == false ) {
             fetchData()
-            setLoaded( true )
-       }
-    }, [data])
+            setLoaded(true)
+        }
+    }, [data,auth])
 
 
     const addData = async () => {
         const data = {
             time: new Date().getTime(),
-            number: Math.floor(Math.random() * 100)
+            number: Math.floor(Math.random() * 100),
+            title: "Item"
         }
         const authUser = auth.currentUser.uid
-        console.log( authUser)
-        const path = `users/${ authUser }/items`
-        const docRef = await addDoc( collection( db, path), data )
+        const path = `users/${authUser}/items`
+        const docRef = await addDoc(collection(db, path), data)
     }
 
     const fetchData = async () => {
-        const path = `users/${ auth.currentUser.uid }/items`
-        const q = query( collection( db, path ) )
-        const unsub = onSnapshot( q, (querySnapshot) => {
-            let items:any = []
-            querySnapshot.forEach( ( doc ) => {
+        const path = `users/${auth.currentUser.uid}/items`
+        const q = query(collection(db, path))
+        const unsub = onSnapshot(q, (querySnapshot) => {
+            let items: any = []
+            querySnapshot.forEach((doc) => {
                 let item = doc.data()
                 item.id = doc.id
-                items.push( item )
+                items.push(item)
             })
-            setData( items )
-        } )
+            setData(items)
+        })
+
     }
 
-    const ListItem = ( props:any ) => {
+    const ListItem = (props: any) => {
         return (
-            <View style={ styles.listItem }>
-                <Text>{ props.title }</Text>
-                <Text>{ props.id }</Text>
+            <View style={styles.listItem}>
+                <Text>{props.title}</Text>
+                <Link href={{ pathname: "/detail", params: { id: props.id } }}>
+                    <Text>Detail</Text>
+                </Link>
             </View>
         )
     }
@@ -73,22 +75,23 @@ export default function Home( props:any ) {
         )
     }
 
-    const renderItem = ( {item}:any ) => {
+    const renderItem = ({ item }: any) => {
         return (
             <ListItem title={item.time} id={item.id} />
         )
     }
 
-    return(
+    return (
         <View>
-            <Pressable style={ styles.addButton } onPress={ () => addData() } >
-                <Text style={ styles.addButtonText }>Add data</Text>
+            <Pressable style={styles.addButton} onPress={() => addData()} >
+                <Text style={styles.addButtonText}>Add data</Text>
             </Pressable>
-            <FlatList 
-                data={data} 
-                renderItem={ renderItem } 
-                keyExtractor={ (item:any) => item.id }
-                ItemSeparatorComponent={ Separator }
+            <FlatList
+                data={data}
+                renderItem={renderItem}
+                keyExtractor={(item: any) => item.id}
+                ItemSeparatorComponent={Separator}
+                style={styles.list}
             />
         </View>
     )
@@ -110,9 +113,13 @@ const styles = StyleSheet.create({
         backgroundColor: "#CCCCCC",
         padding: 10,
         flexDirection: "row",
+        justifyContent: "space-between"
     },
     separator: {
-        backgroundColor:"#EEEEEE",
+        backgroundColor: "#EEEEEE",
         height: 3,
+    },
+    list: {
+        flex: 1,
     }
 })
