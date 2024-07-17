@@ -3,29 +3,9 @@ import { AuthContext } from '@/contexts/AuthContext'
 import { useContext, useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { DbContext } from '@/contexts/DbContext'
-import { collection, addDoc, getDocs, query } from "firebase/firestore"
+import { collection, addDoc, where, query, onSnapshot } from "firebase/firestore"
 import { useNavigation } from 'expo-router'
 import { SignOutButton } from '@/components/SignOutButton'
-
-
-const DATA = [
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-      title: 'First Item',
-    },
-    {
-      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-      title: 'Second Item',
-    },
-    {
-      id: '58694a0f-3da1-471f-bd96-145571e29d72',
-      title: 'Third Item',
-    },
-    {
-        id: '58694a0f-3da1-471f-bd96-145571e29d75',
-        title: 'Fourth Item',
-      },
-]
 
 export default function Home( props:any ) {
     const auth = useContext( AuthContext )
@@ -34,6 +14,7 @@ export default function Home( props:any ) {
     const navigation = useNavigation()
 
     const [data, setData ] = useState([])
+    const [loaded,setLoaded] = useState(false)
 
 
     // showing the header via setOptions()
@@ -44,8 +25,11 @@ export default function Home( props:any ) {
         })
     }, [navigation])
 
-    useEffect( () => {
-        fetchData()
+    useEffect( () => { 
+       if( loaded == false ) {
+            fetchData()
+            setLoaded( true )
+       }
     }, [data])
 
 
@@ -61,16 +45,17 @@ export default function Home( props:any ) {
     }
 
     const fetchData = async () => {
-        console.log("fetching...")
-        const path = `users/${auth.currentUser.uid }/items`
-        const qs = await getDocs( collection(db, path ) )
-        let items:any = []
-        qs.forEach( (doc ) => {
-            let item = doc.data()
-            item.id = doc.id
-            items.push( item )
-        })
-        setData( items )
+        const path = `users/${ auth.currentUser.uid }/items`
+        const q = query( collection( db, path ) )
+        const unsub = onSnapshot( q, (querySnapshot) => {
+            let items:any = []
+            querySnapshot.forEach( ( doc ) => {
+                let item = doc.data()
+                item.id = doc.id
+                items.push( item )
+            })
+            setData( items )
+        } )
     }
 
     const ListItem = ( props:any ) => {
@@ -102,7 +87,7 @@ export default function Home( props:any ) {
             <FlatList 
                 data={data} 
                 renderItem={ renderItem } 
-                keyExtractor={ item => item.id }
+                keyExtractor={ (item:any) => item.id }
                 ItemSeparatorComponent={ Separator }
             />
         </View>
