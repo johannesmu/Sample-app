@@ -13,7 +13,10 @@ export default function Home( props:any ) {
     const router = useRouter()
     const navigation = useNavigation()
     // showing the header via setOptions()
-    navigation.setOptions({ headerShown: true })
+    //navigation.setOptions({ headerShown: true })
+    useEffect( () => {
+        navigation.setOptions({ headerShown: true })
+    }, [navigation])
 
     const SignOutUser = () => {
         signOut( auth )
