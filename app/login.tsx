@@ -1,21 +1,34 @@
 import { View, Text, StyleSheet, StatusBar } from 'react-native'
 import { Link } from 'expo-router'
 import { AuthForm } from '@/components/AuthForm'
-import { signInWithEmailAndPassword } from '@firebase/auth'
+import { signInWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth'
 import { AuthContext } from '@/contexts/AuthContext'
 import { useContext, useState } from 'react'
-import { useRouter } from 'expo-router'
+import { useRouter, useNavigation } from 'expo-router'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
 export default function Login(props: any) {
     const auth = useContext( AuthContext )
     const router = useRouter()
+    const navigation = useNavigation()
     const [ error, setError ] = useState('')
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // user is authenticated
+            // redirect to home
+           // router.replace('/home')
+        }
+        else {
+            // user is not authenticated
+        }
+    })
 
     const SignIn = ( email:string, password:string ) => {
         signInWithEmailAndPassword( auth, email, password )
         .then((userCredential) => {
-            router.replace('/home')
+            //router.replace('home')
+            navigation.reset({ index: 0, routes: [ { name: "home"} ] })
         })
         .catch(( error) => {
             setError( error.code )

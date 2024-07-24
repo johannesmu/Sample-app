@@ -10,7 +10,7 @@ export default function Detail(props: any) {
     const auth = useContext(AuthContext)
     const navigation = useNavigation()
     const params = useLocalSearchParams()
-    const { id } = params
+    const id:string  = params.id as string
 
     interface Idoc {
         number: number,
@@ -22,12 +22,13 @@ export default function Detail(props: any) {
     useEffect(() => {
         navigation.setOptions({ headerShown: true })
         getDocument(id)
+        console.log( params.id )
     }, [navigation])
 
     const getDocument = async (documentId: string) => {
-        const docRef = doc(db, `users/${auth.currentUser.uid}/items`, id)
+        const docRef = doc(db, `users/${auth.currentUser.uid}/items`, id )
         const docSnap = await getDoc(docRef)
-        setDocument(docSnap.data())
+        setDocument(docSnap.data() as Idoc)
     }
 
     const deleteDocument = async ( documentId: string ) => {

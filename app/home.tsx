@@ -1,17 +1,17 @@
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native'
 import { AuthContext } from '@/contexts/AuthContext'
 import { useContext, useEffect, useState } from 'react'
-import { useRouter, Link } from 'expo-router'
+import { useNavigation, usePathname, Link } from 'expo-router'
 import { DbContext } from '@/contexts/DbContext'
 import { collection, addDoc, where, query, onSnapshot } from "firebase/firestore"
-import { useNavigation } from 'expo-router'
 import { SignOutButton } from '@/components/SignOutButton'
 
 export default function Home(props: any) {
     const auth = useContext(AuthContext)
     const db = useContext(DbContext)
-    const router = useRouter()
     const navigation = useNavigation()
+    const pathname = usePathname()
+    let unsubscribe:any
 
     const [data, setData] = useState([])
     const [loaded, setLoaded] = useState(false)
@@ -25,11 +25,18 @@ export default function Home(props: any) {
     }, [navigation])
 
     useEffect(() => {
+        // fetch data when app is in home
         if (loaded == false ) {
             fetchData()
             setLoaded(true)
         }
     }, [data,auth])
+
+    useEffect(() => {
+        if( pathname != "/home") {
+            
+        }
+    }, [pathname])
 
 
     const addData = async () => {
@@ -46,7 +53,7 @@ export default function Home(props: any) {
     const fetchData = async () => {
         const path = `users/${auth.currentUser.uid}/items`
         const q = query(collection(db, path))
-        const unsub = onSnapshot(q, (querySnapshot) => {
+        unsubscribe = onSnapshot(q, (querySnapshot) => {
             let items: any = []
             querySnapshot.forEach((doc) => {
                 let item = doc.data()
@@ -82,7 +89,7 @@ export default function Home(props: any) {
     }
 
     return (
-        <View>
+        <View style={ styles.container }>
             <Pressable style={styles.addButton} onPress={() => addData()} >
                 <Text style={styles.addButtonText}>Add data</Text>
             </Pressable>
@@ -98,6 +105,9 @@ export default function Home(props: any) {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
     addButton: {
         backgroundColor: "#333333",
         padding: 8,
