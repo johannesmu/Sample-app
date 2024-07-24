@@ -4,29 +4,35 @@ import { AuthForm } from '@/components/AuthForm'
 import { AuthContext } from '@/contexts/AuthContext'
 import { useContext, useState } from 'react'
 import { createUserWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth'
-import { useRouter } from 'expo-router'
+import { useRouter, useNavigation } from 'expo-router'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
 export default function Signup(props: any) {
     const auth = useContext(AuthContext)
     const router = useRouter()
-    const [ error, setError ] = useState('')
+    const navigation = useNavigation()
+    const [error, setError] = useState('')
 
-    const createAccount = ( email:string, password:string ) => {
-        createUserWithEmailAndPassword( auth, email, password )
-        .then( (userCredential) => {
-            router.replace('/home')
-        })
-        .catch( (error) => {
-           setError( error.code )
-        })
+    const createAccount = (email: string, password: string) => {
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // router.replace('/home')
+                navigation.reset(
+                    { index: 0, routes: [{ name: "home" }] }
+                )
+            })
+            .catch((error) => {
+                setError(error.code)
+            })
     }
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
             // user is authenticated
             // redirect to home
-            router.replace('/home')
+            navigation.reset(
+                { index: 0, routes: [ { name : "home" } ] }
+            )
         }
         else {
             // user is not authenticated

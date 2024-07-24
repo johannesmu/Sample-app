@@ -1,16 +1,16 @@
-import { Text, View, Pressable } from 'react-native'
+import { Text, View, Pressable, StyleSheet, TextInput } from 'react-native'
 import { useNavigation, useLocalSearchParams } from 'expo-router'
 import { useState, useEffect, useContext } from 'react'
 import { DbContext } from '@/contexts/DbContext'
 import { AuthContext } from '@/contexts/AuthContext'
-import { doc, getDoc, deleteDoc } from '@firebase/firestore'
+import { doc, getDoc, deleteDoc, updateDoc } from '@firebase/firestore'
 
 export default function Detail(props: any) {
     const db = useContext(DbContext)
     const auth = useContext(AuthContext)
     const navigation = useNavigation()
     const params = useLocalSearchParams()
-    const { id } = params
+    const id:string  = params.id as string
 
     interface Idoc {
         number: number,
@@ -18,16 +18,21 @@ export default function Detail(props: any) {
         time: number,
     }
     const [document, setDocument] = useState<Idoc>()
+    const [ modified, setModified ] = useState( false )
 
     useEffect(() => {
         navigation.setOptions({ headerShown: true })
         getDocument(id)
     }, [navigation])
 
+    useEffect( () => {
+        setModified( true )
+    }, [document])
+
     const getDocument = async (documentId: string) => {
         const docRef = doc(db, `users/${auth.currentUser.uid}/items`, id)
         const docSnap = await getDoc(docRef)
-        setDocument(docSnap.data())
+        setDocument(docSnap.data() as Idoc)
     }
 
     const deleteDocument = async ( documentId: string ) => {
@@ -36,14 +41,38 @@ export default function Detail(props: any) {
         navigation.goBack()
     }
 
+    const updateDocument = async () => {
+        const docRef = doc(db, `users/${auth.currentUser.uid}/items`, id)
+        const update = await updateDoc( 
+            docRef, { time: document.time, title: document.title, number: document.number}
+        )
+    }
+
     if (document) {
         return (
-            <View>
-                <Text>Item Detail for {id}</Text>
-                <Text>Title: {document.title}</Text>
-                <Text>Time: {document.time }</Text>
+            <View style={ styles.container }>
+                <Text style={ styles.title }>Title</Text>
+                <TextInput 
+                    value={document.title } 
+                    style={ styles.input } 
+                    onChangeText={ (val) => setDocument({ time: document.time, title: val, number: document.number }) }
+                />
+                <Text style={ styles.title }>Time</Text>
+                <TextInput 
+                    keyboardType='numeric'
+                    value={ document.number.toString() } 
+                    style={ styles.input } 
+                    onChangeText={ (val) => setDocument( {time: document.time, title: document.title, number: parseInt(val) } ) }
+                />
                 <Pressable onPress={ () => deleteDocument(id) }>
                     <Text>Delete</Text>
+                </Pressable>
+                <Pressable 
+                    disabled={ (modified) ? false : true }
+                    style={ (modified) ? styles.updateEnabled : styles.updateDisabled }
+                    onPress={ () => updateDocument() }
+                >
+                    <Text>Update</Text>
                 </Pressable>
             </View>
         )
@@ -52,3 +81,29 @@ export default function Detail(props: any) {
         return null
     }
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 10,
+    },
+    title: {
+        fontSize: 20,
+    },
+    input: {
+        padding: 5,
+        borderColor: '#CCCCCC',
+        borderStyle: 'solid',
+        backgroundColor: '#FFFFFF',
+        fontSize: 16,
+        marginBottom: 20,
+    },
+    updateDisabled: {
+        display: 'none',
+        
+    },
+    updateEnabled: {
+       display: 'flex'
+      
+    }
+})
