@@ -82,7 +82,7 @@ export default function Home(props: any) {
     }
 
     return (
-        <View>
+        <View style={ styles.container}>
             <Pressable style={styles.addButton} onPress={() => addData()} >
                 <Text style={styles.addButtonText}>Add data</Text>
             </Pressable>
@@ -98,6 +98,9 @@ export default function Home(props: any) {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
     addButton: {
         backgroundColor: "#333333",
         padding: 8,

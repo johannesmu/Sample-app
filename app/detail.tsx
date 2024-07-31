@@ -17,7 +17,7 @@ export default function Detail(props: any) {
         title: string,
         time: number,
     }
-    const [document, setDocument] = useState<Idoc>()
+    const [document, setDocument] = useState<Idoc | any>()
     const [ modified, setModified ] = useState( false )
 
     useEffect(() => {
@@ -33,6 +33,7 @@ export default function Detail(props: any) {
         const docRef = doc(db, `users/${auth.currentUser.uid}/items`, id)
         const docSnap = await getDoc(docRef)
         setDocument(docSnap.data() as Idoc)
+        setModified( false )
     }
 
     const deleteDocument = async ( documentId: string ) => {
@@ -59,21 +60,23 @@ export default function Detail(props: any) {
                 />
                 <Text style={ styles.title }>Time</Text>
                 <TextInput 
-                    keyboardType='numeric'
+                    inputMode='numeric'
                     value={ document.number.toString() } 
                     style={ styles.input } 
                     onChangeText={ (val) => setDocument( {time: document.time, title: document.title, number: parseInt(val) } ) }
                 />
-                <Pressable onPress={ () => deleteDocument(id) }>
-                    <Text>Delete</Text>
-                </Pressable>
-                <Pressable 
-                    disabled={ (modified) ? false : true }
-                    style={ (modified) ? styles.updateEnabled : styles.updateDisabled }
-                    onPress={ () => updateDocument() }
-                >
-                    <Text>Update</Text>
-                </Pressable>
+                <View style={ styles.buttonsRow }>
+                    <Pressable onPress={ () => deleteDocument(id) } style={ styles.deleteButton }>
+                        <Text style={ styles.buttonText }>Delete</Text>
+                    </Pressable>
+                    <Pressable
+                        disabled={ (modified) ? false : true }
+                        style={ (modified) ? styles.updateEnabled : styles.updateDisabled }
+                        onPress={ () => updateDocument() }
+                    >
+                        <Text>Update</Text>
+                    </Pressable>
+                </View>
             </View>
         )
     }
@@ -99,11 +102,25 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     updateDisabled: {
-        display: 'none',
-        
+        backgroundColor: "#cccccc",
+        padding: 10,
+        borderRadius: 10,
     },
     updateEnabled: {
-       display: 'flex'
-      
+       backgroundColor: "#1f913b",
+       padding: 10,
+       borderRadius: 10,
+    },
+    buttonsRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
+    deleteButton: {
+        padding: 10,
+        backgroundColor: "#c23a3f",
+        borderRadius: 10,
+    },
+    buttonText: {
+        color: "#CCCCCC",
     }
 })
