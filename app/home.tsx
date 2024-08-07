@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native'
+import { View, Text, StyleSheet, Pressable, FlatList, Modal, TextInput } from 'react-native'
 import { AuthContext } from '@/contexts/AuthContext'
 import { useContext, useEffect, useState } from 'react'
 import { useRouter, Link } from 'expo-router'
@@ -6,6 +6,7 @@ import { DbContext } from '@/contexts/DbContext'
 import { collection, addDoc, where, query, onSnapshot } from "firebase/firestore"
 import { useNavigation } from 'expo-router'
 import { SignOutButton } from '@/components/SignOutButton'
+import { Ionicons } from '@expo/vector-icons'
 
 export default function Home(props: any) {
     const auth = useContext(AuthContext)
@@ -15,6 +16,9 @@ export default function Home(props: any) {
 
     const [data, setData] = useState([])
     const [loaded, setLoaded] = useState(false)
+    const [modalVisible, setModalVisible] = useState(false)
+    const [title, setTitle] = useState('')
+    const [number, setNumber] = useState('')
 
     // showing the header via setOptions()
     useEffect(() => {
@@ -25,18 +29,23 @@ export default function Home(props: any) {
     }, [navigation])
 
     useEffect(() => {
-        if (loaded == false ) {
+        if (loaded == false) {
             fetchData()
             setLoaded(true)
         }
-    }, [data,auth])
+    }, [data, auth])
+
+    useEffect( () => {
+        setTitle('')
+        setNumber('')
+    }, [modalVisible])
 
 
     const addData = async () => {
         const data = {
             time: new Date().getTime(),
-            number: Math.floor(Math.random() * 100),
-            title: "Item"
+            number: parseInt(number),
+            title: title
         }
         const authUser = auth.currentUser.uid
         const path = `users/${authUser}/items`
@@ -77,14 +86,20 @@ export default function Home(props: any) {
 
     const renderItem = ({ item }: any) => {
         return (
-            <ListItem title={item.time} id={item.id} />
+            <ListItem title={item.title} id={item.id} />
         )
     }
 
     return (
-        <View style={ styles.container}>
-            <Pressable style={styles.addButton} onPress={() => addData()} >
-                <Text style={styles.addButtonText}>Add data</Text>
+        <View style={styles.container}>
+            <Pressable
+                style={styles.addButton}
+                //onPress={() => addData()} 
+                onPress={() => setModalVisible(true)}
+            >
+                <Text style={styles.addButtonText}>
+                    <Ionicons name="add" size={24} />
+                </Text>
             </Pressable>
             <FlatList
                 data={data}
@@ -93,6 +108,32 @@ export default function Home(props: any) {
                 ItemSeparatorComponent={Separator}
                 style={styles.list}
             />
+            <Modal
+                animationType="fade"
+                transparent={false}
+                visible={modalVisible}
+            >
+                <View style={styles.modal}>
+                    <View style={styles.modalContainer}>
+                        <Text>Enter title</Text>
+                        <TextInput style={styles.modalInput} value={title} onChangeText={(val) => setTitle(val)} />
+                        <Text>Enter Number</Text>
+                        <TextInput style={styles.modalInput} inputMode="numeric" value={number} onChangeText={(val) => setNumber(val)} />
+                        <Pressable
+                            style={styles.addItemButton}
+                            onPress={() => {
+                                addData()
+                                setModalVisible(false)
+                            }
+                            }>
+                            <Text style={styles.addItemText}>Add Item</Text>
+                        </Pressable>
+                    </View>
+                    <Pressable style={styles.modalClose} onPress={() => setModalVisible(false)}>
+                        <Text>Close</Text>
+                    </Pressable>
+                </View>
+            </Modal>
         </View>
     )
 }
@@ -105,12 +146,20 @@ const styles = StyleSheet.create({
         backgroundColor: "#333333",
         padding: 8,
         alignSelf: "center",
-        width: 200,
+        width: 40,
+        height: 40,
         borderRadius: 5,
+        position: "absolute",
+        right: 20,
+        bottom: 20,
+        zIndex: 999,
+        justifyContent: "center",
+        alignItems: "center"
     },
     addButtonText: {
         color: "#eeeeee",
         textAlign: "center",
+        fontSize: 30,
     },
     listItem: {
         backgroundColor: "#CCCCCC",
@@ -124,5 +173,35 @@ const styles = StyleSheet.create({
     },
     list: {
         flex: 1,
-    }
+    },
+    modal: {
+        padding: 20,
+        // backgroundColor: "hsla(0, 0%, 0%, 0.4)",
+        flex: 1,
+    },
+    modalClose: {
+        position: "absolute",
+        right: 20,
+        top: 20,
+    },
+    modalContainer: {
+        flex: 1,
+        marginVertical: 50
+    },
+    addItemButton: {
+        backgroundColor: "#333333",
+        padding: 8,
+        alignSelf: "center",
+    },
+    addItemText: {
+        color: "#CCCCCC",
+        textAlign: "center",
+    },
+    modalInput: {
+        borderStyle: "solid",
+        borderWidth: 1,
+        borderColor: "#CCCCCC",
+        padding: 8,
+        marginBottom: 20,
+    },
 })

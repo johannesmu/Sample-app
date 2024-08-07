@@ -47,6 +47,18 @@ export default function Detail(props: any) {
         const update = await updateDoc( 
             docRef, { time: document.time, title: document.title, number: document.number}
         )
+        navigation.goBack()
+    }
+
+    const convertTimeStamp = ( timestamp:number ) => {
+        const dateObj = new Date( timestamp )
+        const yr = dateObj.getFullYear()
+        const month = dateObj.getMonth() + 1
+        const date = dateObj.getDate()
+        const hour = dateObj.getHours()
+        const min = dateObj.getMinutes()
+        const sec = dateObj.getSeconds()
+        return `${date}/${month}/${yr} ${hour}:${min}:${sec}`
     }
 
     if (document) {
@@ -58,13 +70,14 @@ export default function Detail(props: any) {
                     style={ styles.input } 
                     onChangeText={ (val) => setDocument({ time: document.time, title: val, number: document.number }) }
                 />
-                <Text style={ styles.title }>Time</Text>
+                <Text style={ styles.title }>Number</Text>
                 <TextInput 
                     inputMode='numeric'
                     value={ document.number.toString() } 
                     style={ styles.input } 
                     onChangeText={ (val) => setDocument( {time: document.time, title: document.title, number: parseInt(val) } ) }
                 />
+                <Text>Created on: { convertTimeStamp(document.time) }</Text>
                 <View style={ styles.buttonsRow }>
                     <Pressable onPress={ () => deleteDocument(id) } style={ styles.deleteButton }>
                         <Text style={ styles.buttonText }>Delete</Text>
@@ -114,6 +127,7 @@ const styles = StyleSheet.create({
     buttonsRow: {
         flexDirection: "row",
         justifyContent: "space-between",
+        marginVertical: 20,
     },
     deleteButton: {
         padding: 10,
